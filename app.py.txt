@@ -1,0 +1,18 @@
+from flask import Flask, request, jsonify
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+app = Flask(__name__)
+
+tokenizer = AutoTokenizer.from_pretrained("./BioGPT")
+model = AutoModelForCausalLM.from_pretrained("./BioGPT")
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    user_input = request.json.get("message")
+    inputs = tokenizer(user_input, return_tensors="pt")
+    outputs = model.generate(**inputs, max_length=100)
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return jsonify({"response": response})
+
+if __name__ == "__main__":
+    app.run(debug=True)
